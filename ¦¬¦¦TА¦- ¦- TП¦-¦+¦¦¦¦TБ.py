@@ -4,6 +4,7 @@ import sys
 import os
 import random
 from PIL import Image
+from time import sleep
 
 
 FPS = 50
@@ -90,7 +91,7 @@ class ball:
         self.all_balls.add(sprite)
         self.data.append([12, 12, 0])
         
-    def move(self):
+    def move_ball(self):
         counter = 0
         for sprite in self.all_balls:
             x, y = sprite.rect.x, sprite.rect.y
@@ -124,14 +125,18 @@ class ball:
             sprite.rect.y += self.data[counter][1]
             sprite.rect.x += self.data[counter][0]
             counter += 1
+
         self.all_balls.draw(screen)
 
 
-class bomb:
-    def __init__(self):
+class bomb(ball):
+    def __init__(ball, self):
+        super().__init__()
         self.all_bombs = pygame.sprite.Group()
         self.data_b = []
         self.sound1 = pygame.mixer.Sound('boing.wav')
+
+        self.sound2 = pygame.mixer.Sound('boom.wav')
         
     def new_bomb(self):
         sprite = pygame.sprite.Sprite()
@@ -149,6 +154,8 @@ class bomb:
             for i in self.mot:
                 if sprite.rect.collidepoint(i):
                     sprite.image = pygame.image.load("boom.png")
+                    self.sound2.play()
+                    self.all_bombs.remove(sprite)
             else:
                 self.data_b[counter][2] -= 1
             if int(y) <= 0 or int(y) >= 600:
@@ -165,7 +172,7 @@ class bomb:
 
 class game(bomb):
     def __init__(self, old):
-        super().__init__()
+        super().__init__(self)
         self.old = old
         self.mot = []
 
@@ -192,6 +199,7 @@ class game(bomb):
         img = self.img.tobytes()
         img = pygame.image.fromstring(img, (1280, 600), 'RGB')
         screen.blit(img, (0,0))
+        self.move_ball()
         self.move_bomb()
 
 
@@ -205,7 +213,7 @@ running = True
 
 cap = cv2.VideoCapture(0)
 g = game([])
-#g.new_ball()
+g.new_ball()
 g.new_bomb()
 while running:
     _, frame = cap.read()
