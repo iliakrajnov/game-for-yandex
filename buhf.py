@@ -16,7 +16,7 @@ class start_s:
         self.g = g
 
     def start_screen(self):
-        fon = pygame.transform.scale(pygame.image.load('logo.png'), (1366, 768))
+        fon = pygame.transform.scale(pygame.image.load('logo.png'), (width, height))
         screen.blit(fon, (0, 0))
         while True:
             for event in pygame.event.get():
@@ -35,7 +35,7 @@ class start_s:
         screen.blit(title, ((width - title.get_rect().width) // 2, 200))
 
         font = pygame.font.Font(None, 30)
-        text_coord = 200 + title.get_rect().bottom
+        text_coord = 400 + title.get_rect().bottom
         for line in intro_text:
             string_rendered = font.render(line, 1, pygame.Color('white'))
             intro_rect = string_rendered.get_rect()
@@ -76,9 +76,49 @@ class start_s:
             clock.tick(FPS)
 
 
-# Шарик
-class ball:
+class exit:
     def __init__(self):
+        self.buttons = pygame.sprite.Group()
+        self.datas = []
+
+    def button(self):
+        sprite = pygame.sprite.Sprite()
+        sprite.image = pygame.image.load("exit.png")
+        sprite.rect = sprite.image.get_rect()
+        sprite.rect.x = 1050
+        sprite.rect.y = 0
+        self.buttons.add(sprite)
+        self.datas.append([12, 12, 0])
+
+    def move(self):
+        global running
+        counter = 0
+        # Движение шарика и чего угодно
+        for sprite in self.buttons:
+            x, y = sprite.rect.x, sprite.rect.y
+            if self.datas[counter][2] == 0:
+                for i in self.mot:
+                    if sprite.rect.collidepoint(i):
+                        self.datas[counter][2] = 5
+                        horisontal = 0
+                        vertical = 0
+                        for j in self.mot:
+                            if j[0] in range(i[0] - 10, i[0] + 10):
+                                horisontal += 1
+                            if j[1] in range(i[1] - 10, i[1] + 10):
+                                vertical += 1
+                        if horisontal > vertical:
+                            running = False
+                            break
+                        elif vertical > horisontal:
+                            running = False
+                            break
+        self.buttons.draw(screen)
+
+# Шарик
+class ball(exit):
+    def __init__(self):
+        super().__init__()
         self.all_balls = pygame.sprite.Group()
         self.data = []
         self.sound1 = pygame.mixer.Sound('boing.wav')
@@ -91,7 +131,7 @@ class ball:
         sprite.rect.x = random.randint(1, 1200)
         sprite.rect.y = random.randint(1, 40)
         self.all_balls.add(sprite)
-        self.data.append([12, 12, 50])
+        self.data.append([12, 12, 0])
 
     def move_ball(self):
         global score
@@ -100,7 +140,7 @@ class ball:
         # Движение шарика и чего угодно
         for sprite in self.all_balls:
             x, y = sprite.rect.x, sprite.rect.y
-            if self.data[counter][2] != 0:
+            if self.data[counter][2] == 0:
                 for i in self.mot:
                     if sprite.rect.collidepoint(i):
                         self.data[counter][2] = 5
@@ -163,10 +203,8 @@ class bomb(ball):
             x, y = sprite.rect.x, sprite.rect.y
             for i in self.mot:
                 if sprite.rect.collidepoint(i):
-                    sprite.image = pygame.image.load("boom.png")
                     self.sound2.play()
-                    score -= 500
-                    print(score)
+                    score -= 100
                     self.all_bombs.remove(sprite)
             else:
                 self.data_b[counter][2] -= 1
@@ -196,9 +234,10 @@ class star(bomb):
     def new_star(self):
         sprite = pygame.sprite.Sprite()
         sprite.image = pygame.image.load("star.png")
+        sprite.image.set_colorkey((255, 255, 255))
         sprite.rect = sprite.image.get_rect()
-        sprite.rect.x = random.randint(1, 1200)
-        sprite.rect.y = random.randint(1, 40)
+        sprite.rect.x = random.randint(1, 1366)
+        sprite.rect.y = random.randint(1, 100)
         self.all_stars.add(sprite)
         self.data_s.append([12, 12, 0])
 
@@ -210,7 +249,6 @@ class star(bomb):
             x, y = sprite.rect.x, sprite.rect.y
             for i in self.mot:
                 if sprite.rect.collidepoint(i):
-                    sprite.image = pygame.image.load("boom.png")
                     self.sound3.play()
                     score += 100
                     self.all_stars.remove(sprite)
@@ -259,6 +297,7 @@ class game(star):
         img = self.img.tobytes()
         img = pygame.image.fromstring(img, (1366, 768), 'RGB')
         screen.blit(img, (0, 0))
+        self.move()
         self.move_ball()
         self.move_bomb()
         self.move_star()
@@ -268,7 +307,7 @@ class game(star):
 pygame.init()
 score = 0
 size = width, height = 1366, 768
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 s = start_s()
 s.start_screen()
@@ -277,9 +316,9 @@ running = True
 
 cap = cv2.VideoCapture(0)
 g = game([])
+g.button()
 while running:
     score_label = pygame.font.Font(None, 75).render(str(score), 1, (175, 175, 175))
-
     _, frame = cap.read()
     frame = cv2.flip(frame, 1)
     g.new_star()
@@ -288,6 +327,7 @@ while running:
     screen.blit(score_label, (250, 10))
     pygame.display.flip()
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
     g.draw(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
