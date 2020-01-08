@@ -5,9 +5,13 @@ import os
 import random
 from PIL import Image
 from time import sleep
+import tkinter as tk
 
 FPS = 50
 all_sprites = pygame.sprite.Group()
+root = tk.Tk()
+
+
 
 
 # Стартовый экран в двух фазах
@@ -28,6 +32,7 @@ class start_s:
 
     def start_screen2(self):
         intro_text = ["Управление интуитивное",
+                      "Кнопка Escape для побега",
                       "Нажмите на любую клавишу, чтобы продолжить..."]
         screen.fill((0, 0, 0))
 
@@ -129,7 +134,7 @@ class ball(exit):
         sprite.image = pygame.image.load("ball.png")
         sprite.rect = sprite.image.get_rect()
         sprite.rect.x = random.randint(1, 1200)
-        sprite.rect.y = random.randint(1, 40)
+        sprite.rect.y = random.randint(1, 100)
         self.all_balls.add(sprite)
         self.data.append([12, 12, 0])
 
@@ -163,10 +168,10 @@ class ball(exit):
                             break
             else:
                 self.data[counter][2] -= 1
-            if int(y) <= 0 or int(y) >= 768:
+            if int(y) <= 0 or int(y) >= height:
                 self.data[counter][1] = -self.data[counter][1]
                 self.sound1.play()
-            if int(x) <= 0 or int(x) >= 1366:
+            if int(x) <= 0 or int(x) >= width:
                 self.data[counter][0] = -self.data[counter][0]
                 self.sound1.play()
             sprite.rect.y += self.data[counter][1]
@@ -208,10 +213,10 @@ class bomb(ball):
                     self.all_bombs.remove(sprite)
             else:
                 self.data_b[counter][2] -= 1
-            if int(y) <= 0 or int(y) >= 768:
+            if int(y) <= 0 or int(y) >= height:
                 self.data_b[counter][1] = -self.data_b[counter][1]
                 self.sound1.play()
-            if int(x) <= 0 or int(x) >= 1366:
+            if int(x) <= 0 or int(x) >= width:
                 self.data_b[counter][0] = -self.data_b[counter][0]
                 self.sound1.play()
             sprite.rect.y += self.data_b[counter][1]
@@ -236,7 +241,7 @@ class star(bomb):
         sprite.image = pygame.image.load("star.png")
         sprite.image.set_colorkey((255, 255, 255))
         sprite.rect = sprite.image.get_rect()
-        sprite.rect.x = random.randint(1, 1366)
+        sprite.rect.x = random.randint(1, width)
         sprite.rect.y = random.randint(1, 100)
         self.all_stars.add(sprite)
         self.data_s.append([12, 12, 0])
@@ -254,10 +259,10 @@ class star(bomb):
                     self.all_stars.remove(sprite)
             else:
                 self.data_s[counter][2] -= 1
-            if int(y) <= 0 or int(y) >= 768:
+            if int(y) <= 0 or int(y) >= height:
                 self.data_s[counter][1] = -self.data_s[counter][1]
                 self.sound1.play()
-            if int(x) <= 0 or int(x) >= 1366:
+            if int(x) <= 0 or int(x) >= width:
                 self.data_s[counter][0] = -self.data_s[counter][0]
                 self.sound1.play()
             sprite.rect.y += self.data_s[counter][1]
@@ -276,7 +281,7 @@ class game(star):
         self.mot = []
 
     def work(self, img):
-        self.img = img.resize((1366, 768))
+        self.img = img.resize(size)
         xs, ys = self.img.size
         pix = self.img.load()
         self.mot = []
@@ -295,7 +300,7 @@ class game(star):
     def draw(self, img):
         self.work(img)
         img = self.img.tobytes()
-        img = pygame.image.fromstring(img, (1366, 768), 'RGB')
+        img = pygame.image.fromstring(img, size, 'RGB')
         screen.blit(img, (0, 0))
         self.move()
         self.move_ball()
@@ -306,7 +311,7 @@ class game(star):
 # Уря игра
 pygame.init()
 score = 0
-size = width, height = 1366, 768
+size = width, height = root.winfo_screenwidth(), root.winfo_screenheight()
 screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 s = start_s()

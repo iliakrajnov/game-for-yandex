@@ -62,7 +62,7 @@ size = WIDTH, HEIGHT = 800, 700
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
 tile_images = {'wall': load_image('box.png'), 'empty': load_image('grass.png'), 'water': load_image('water.png'), 'mount': load_image('mount.png')}
-player_image = load_image('mar.png')
+player_image = load_image('dova.png')
 
 tile_width = tile_height = 50
 
@@ -78,13 +78,13 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
         self.image = player_image
-        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
         self.pos = pos_x, pos_y
 
     def move(self, x, y):
         self.pos = x, y
         self.rect = self.image.get_rect().move(
-            tile_width * self.pos[0] + 15, tile_height * self.pos[1] + 5)
+            tile_width * self.pos[0], tile_height * self.pos[1])
 
 
 def generate_level(level):
@@ -127,33 +127,37 @@ def move(hero, movement):
 class Camera:
     # зададим начальный сдвиг камеры
     def __init__(self):
-        self.dx = 0
-        self.dy = 0
+        self.dx, self.dy = 0, 0
 
     # сдвинуть объект obj на смещение камеры
     def apply(self, obj):
         obj.rect.x += self.dx
         obj.rect.y += self.dy
 
+
     # позиционировать камеру на объекте target
     def update(self, target):
-        self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
-        self.dy = -(target.rect.y + target.rect.h // 2 - height // 2)
+        self.dx = -(target.rect.x + target.rect.w // 2 - WIDTH // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
+        print(-(target.rect.x + target.rect.w // 2 - WIDTH // 2), -(target.rect.y + target.rect.h // 2 - HEIGHT // 2))
 
 
-camera = Camera()
-camera.update(player);
-# обновляем положение всех спрайтов
-for sprite in all_sprites:
-      camera.apply(sprite)
 start_screen()
 level_map = load_level('map.txt')
 hero, max_x, max_y = generate_level(level_map)
-while 1:
+camera = Camera()
+running = True
+
+while running:
+    camera.update(hero)
+    print(hero.pos)
+    for sprite in all_sprites:
+        camera.apply(sprite)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = 0
+            running = False
         if event.type == pygame.KEYDOWN:
+
             if event.key == pygame.K_UP:
                 move(hero, 'up')
             if event.key == pygame.K_DOWN:
@@ -162,6 +166,7 @@ while 1:
                 move(hero, 'left')
             if event.key == pygame.K_RIGHT:
                 move(hero, 'right')
+
 
     screen.fill((0, 0, 0))
     all_sprites.draw(screen)
