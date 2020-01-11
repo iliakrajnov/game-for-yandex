@@ -9,7 +9,7 @@ import tkinter as tk
 import sqlite3
 
 
-con = sqlite3.connect("scorebase.db")
+con = sqlite3.connect("data/scorebase.db")
 cur = con.cursor()
 FPS = 50
 all_sprites = pygame.sprite.Group()
@@ -24,17 +24,44 @@ def load_image(name, colorkey=None):
     image = pygame.image.load(fullname)
     return image
 
-# class tabl:
-#     def __init__(self, score):
-#         self.score = score
-#
-#     def ad_score(self):
-#         g = g
-#
-#     def table(self):
-#         return
 
-# Стартовый экран в двух фазах
+class error():
+    def __init__(self, g=1):
+        self.g = g
+
+    def gameover_screen(self):
+        global score
+        screen.fill((0, 0, 0))
+        intro_text = ['Нажмите на кнопку "Escape", чтобы выйти на улицу',
+                      "Enter - чтобы купить веб-камеру"]
+        title = pygame.font.Font(None, 120).render('Нужна вебка', 1, pygame.Color('white'))
+        screen.blit(title, ((width - title.get_rect().width) // 2, 200))
+        font = pygame.font.Font(None, 30)
+        text_coord = 200 + title.get_rect().bottom
+        for line in intro_text:
+            string_rendered = font.render(line, 1, pygame.Color('white'))
+            intro_rect = string_rendered.get_rect()
+            text_coord += 10
+            intro_rect.top = text_coord
+            intro_rect.x = (width - string_rendered.get_rect().width) // 2
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    raise SystemExit
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        raise SystemExit
+                    elif event.key == pygame.K_RETURN:
+                        os.system('start https://www.e-katalog.ru/list/201/pr-7488/')
+
+            pygame.display.flip()
+            clock.tick()
+
+
 class start_s:
     def __init__(self, g=1):
         self.g = g
@@ -108,9 +135,9 @@ def gameover_screen(scores):
     res2 = cur.execute("""SELECT score FROM score""").fetchone()
     intro_text = ['Нажмите на кнопку "Escape", чтобы выйти из игры',
                   "Enter - начать заново", "",
-                  "Лучшие",
                   f"Предыдущий рекорд | {str(res2[0])}",
-                  f"Ты                | {scores}"]
+                  f"Ты                | {scores}",
+                  "Ваше имя:"]
     cur.execute(f"""Update score
     SET score = {int(score)}
     WHERE name = 'Предыдущий'""").fetchall()
@@ -126,7 +153,7 @@ def gameover_screen(scores):
         intro_rect.x = (width - string_rendered.get_rect().width) // 2
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
-    idle = True
+    name = ''
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -136,9 +163,18 @@ def gameover_screen(scores):
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     raise SystemExit
-                elif idle and event.key == pygame.K_RETURN:
+                elif event.key == pygame.K_RETURN:
                     score = 0
                     start()
+                elif event.key == pygame.K_BACKSPACE:
+                    name = name[:-1]
+                else:
+                    name += chr(int(event.key))
+                    if len(name) > 20:
+                        name = name[:20]
+                title = pygame.font.Font(None, 120).render(name, 1, pygame.Color('white'))
+                pygame.draw.rect(screen, (0, 0, 0), (0, 500, 10000, 500))
+                screen.blit(title, ((width - title.get_rect().width) // 2, 500))
 
         pygame.display.flip()
         clock.tick()
@@ -150,7 +186,7 @@ class exit:
 
     def button(self):
         sprite = pygame.sprite.Sprite()
-        sprite.image = pygame.image.load("exit.png")
+        sprite.image = pygame.image.load("data/exit.png")
         sprite.rect = sprite.image.get_rect()
         sprite.rect.x = width - 300
         sprite.rect.y = 0
@@ -170,17 +206,7 @@ class exit:
                 for i in self.mot:
                     if sprite.rect.collidepoint(i):
                         self.datas[counter][2] = 5
-                        horisontal = 0
-                        vertical = 0
-                        for j in self.mot:
-                            if j[0] in range(i[0] - 10, i[0] + 10):
-                                horisontal += 1
-                            if j[1] in range(i[1] - 10, i[1] + 10):
-                                vertical += 1
-                        if horisontal > vertical:
-                            gameover_screen(score)
-                        elif vertical > horisontal:
-                            gameover_screen(score)
+                        gameover_screen(score)
         self.buttons.draw(screen)
 
 # Шарик
@@ -189,12 +215,12 @@ class ball(exit):
         super().__init__()
         self.all_balls = pygame.sprite.Group()
         self.data = []
-        self.sound1 = pygame.mixer.Sound('boing.wav')
+        self.sound1 = pygame.mixer.Sound('data/boing.wav')
 
     # Новые шарики
     def new_ball(self):
         sprite = pygame.sprite.Sprite()
-        sprite.image = pygame.image.load("ball.png")
+        sprite.image = pygame.image.load("data/ball.png")
         sprite.rect = sprite.image.get_rect()
         sprite.rect.x = random.randint(1, 1200)
         sprite.rect.y = random.randint(1, 100)
@@ -251,12 +277,12 @@ class bomb(ball):
         super().__init__()
         self.all_bombs = pygame.sprite.Group()
         self.data_b = []
-        self.sound1 = pygame.mixer.Sound('boing.wav')
-        self.sound2 = pygame.mixer.Sound('boom2.wav')
+        self.sound1 = pygame.mixer.Sound('data/boing.wav')
+        self.sound2 = pygame.mixer.Sound('data/boom2.wav')
 
     def new_bomb(self):
         sprite = pygame.sprite.Sprite()
-        sprite.image = pygame.image.load("bomb.png")
+        sprite.image = pygame.image.load("data/bomb.png")
         sprite.rect = sprite.image.get_rect()
         sprite.rect.x = random.randint(1, 1200)
         sprite.rect.y = random.randint(1, 40)
@@ -274,6 +300,7 @@ class bomb(ball):
                     self.sound2.play()
                     score -= 100
                     self.all_bombs.remove(sprite)
+                    return 'boom'
             else:
                 self.data_b[counter][2] -= 1
             if int(y) <= 0 or int(y) >= height:
@@ -296,12 +323,12 @@ class star(bomb):
         super().__init__(self)
         self.all_stars = pygame.sprite.Group()
         self.data_s = []
-        self.sound1 = pygame.mixer.Sound('boing.wav')
-        self.sound3 = pygame.mixer.Sound('raz.wav')
+        self.sound1 = pygame.mixer.Sound('data/boing.wav')
+        self.sound3 = pygame.mixer.Sound('data/raz.wav')
 
     def new_star(self):
         sprite = pygame.sprite.Sprite()
-        sprite.image = pygame.image.load("star.png")
+        sprite.image = pygame.image.load("data/star.png")
         sprite.image.set_colorkey((255, 255, 255))
         sprite.rect = sprite.image.get_rect()
         sprite.rect.x = random.randint(1, width)
@@ -361,19 +388,41 @@ class game(star):
         self.old = pix
 
     def draw(self, img):
+        global score_label
         self.work(img)
         img = self.img.tobytes()
         img = pygame.image.fromstring(img, size, 'RGB')
         screen.blit(img, (0, 0))
         self.move()
         self.move_ball()
-        self.move_bomb()
         self.move_star()
-
+        if self.move_bomb() == 'boom':
+            for k in range(20):
+                x = random.randint(-75, 75)
+                y = random.randint(-75, 75)
+                for i in self.all_bombs:
+                    i.rect.x += x
+                    i.rect.y += y
+                for i in self.all_balls:
+                    i.rect.x += x
+                    i.rect.y += y
+                for i in self.all_stars:
+                    i.rect.x += x
+                    i.rect.y += y
+                screen.blit(img, (x, y))
+                screen.blit(score_label, (250 + x, 10 + y))
+                self.all_bombs.draw(screen)
+                self.all_balls.draw(screen)
+                self.all_stars.draw(screen)
+                pygame.display.flip()
 
 def start():
+    global score_label
     running = True
-    cap = cv2.VideoCapture(0)
+    try:
+        cap = cv2.VideoCapture(0)
+    except Exception:
+        error().gameover_screen()
     g = game([])
     g.button()
     while running:
