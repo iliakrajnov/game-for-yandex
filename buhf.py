@@ -6,13 +6,33 @@ import random
 from PIL import Image
 from time import sleep
 import tkinter as tk
+import sqlite3
 
+
+con = sqlite3.connect("scorebase.db")
+cur = con.cursor()
 FPS = 50
 all_sprites = pygame.sprite.Group()
 root = tk.Tk()
+score = 0
+size = width, height = root.winfo_screenwidth(), root.winfo_screenheight()
+screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)
+clock = pygame.time.Clock()
 
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    image = pygame.image.load(fullname)
+    return image
 
-
+# class tabl:
+#     def __init__(self, score):
+#         self.score = score
+#
+#     def ad_score(self):
+#         g = g
+#
+#     def table(self):
+#         return
 
 # Стартовый экран в двух фазах
 class start_s:
@@ -20,7 +40,7 @@ class start_s:
         self.g = g
 
     def start_screen(self):
-        fon = pygame.transform.scale(pygame.image.load('logo.png'), (width, height))
+        fon = pygame.transform.scale(load_image('logo.png'), (width, height))
         screen.blit(fon, (0, 0))
         while True:
             for event in pygame.event.get():
@@ -29,6 +49,8 @@ class start_s:
                     sys.exit()
                 elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
                     return
+            pygame.display.flip()
+            clock.tick(FPS)
 
     def start_screen2(self):
         intro_text = ["Управление интуитивное",
@@ -80,6 +102,46 @@ class start_s:
             pygame.display.flip()
             clock.tick(FPS)
 
+def gameover_screen(scores):
+    global score
+    screen.fill((0, 0, 0))
+    res2 = cur.execute("""SELECT score FROM score""").fetchone()
+    intro_text = ['Нажмите на кнопку "Escape", чтобы выйти из игры',
+                  "Enter - начать заново", "",
+                  "Лучшие",
+                  f"Предыдущий рекорд | {str(res2[0])}",
+                  f"Ты                | {scores}"]
+    cur.execute(f"""Update score
+    SET score = {int(score)}
+    WHERE name = 'Предыдущий'""").fetchall()
+    title = pygame.font.Font(None, 120).render('Game Over.', 1, pygame.Color('white'))
+    screen.blit(title, ((width - title.get_rect().width) // 2, 200))
+    font = pygame.font.Font(None, 30)
+    text_coord = 200 + title.get_rect().bottom
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = (width - string_rendered.get_rect().width) // 2
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    idle = True
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    raise SystemExit
+                elif idle and event.key == pygame.K_RETURN:
+                    score = 0
+                    start()
+
+        pygame.display.flip()
+        clock.tick()
 
 class exit:
     def __init__(self):
@@ -90,13 +152,16 @@ class exit:
         sprite = pygame.sprite.Sprite()
         sprite.image = pygame.image.load("exit.png")
         sprite.rect = sprite.image.get_rect()
-        sprite.rect.x = 1050
+        sprite.rect.x = width - 300
         sprite.rect.y = 0
         self.buttons.add(sprite)
         self.datas.append([12, 12, 0])
 
     def move(self):
         global running
+
+        global score
+        # Секрет
         counter = 0
         # Движение шарика и чего угодно
         for sprite in self.buttons:
@@ -113,11 +178,9 @@ class exit:
                             if j[1] in range(i[1] - 10, i[1] + 10):
                                 vertical += 1
                         if horisontal > vertical:
-                            running = False
-                            break
+                            gameover_screen(score)
                         elif vertical > horisontal:
-                            running = False
-                            break
+                            gameover_screen(score)
         self.buttons.draw(screen)
 
 # Шарик
@@ -308,31 +371,29 @@ class game(star):
         self.move_star()
 
 
+def start():
+    running = True
+    cap = cv2.VideoCapture(0)
+    g = game([])
+    g.button()
+    while running:
+        score_label = pygame.font.Font(None, 75).render(str(score), 1, (175, 175, 175))
+        _, frame = cap.read()
+        frame = cv2.flip(frame, 1)
+        g.new_star()
+        g.new_bomb()
+        g.new_ball()
+        screen.blit(score_label, (250, 10))
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    gameover_screen(score)
+        g.draw(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+
 # Уря игра
 pygame.init()
-score = 0
-size = width, height = root.winfo_screenwidth(), root.winfo_screenheight()
-screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)
-clock = pygame.time.Clock()
 s = start_s()
 s.start_screen()
 s.start_screen2()
-running = True
-
-cap = cv2.VideoCapture(0)
-g = game([])
-g.button()
-while running:
-    score_label = pygame.font.Font(None, 75).render(str(score), 1, (175, 175, 175))
-    _, frame = cap.read()
-    frame = cv2.flip(frame, 1)
-    g.new_star()
-    g.new_bomb()
-    g.new_ball()
-    screen.blit(score_label, (250, 10))
-    pygame.display.flip()
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
-    g.draw(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+start()
