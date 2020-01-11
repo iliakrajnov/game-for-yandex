@@ -7,10 +7,11 @@ from PIL import Image
 from time import sleep
 import tkinter as tk
 import sqlite3
+import csv
 
 
-con = sqlite3.connect("data/scorebase.db")
-cur = con.cursor()
+
+
 FPS = 50
 all_sprites = pygame.sprite.Group()
 root = tk.Tk()
@@ -131,16 +132,14 @@ class start_s:
 
 def gameover_screen(scores):
     global score
+    global records
+    records = list(reversed(sorted(records, key=lambda i: int(i[1]))))
     screen.fill((0, 0, 0))
-    res2 = cur.execute("""SELECT score FROM score""").fetchone()
     intro_text = ['Нажмите на кнопку "Escape", чтобы выйти из игры',
                   "Enter - начать заново", "",
-                  f"Предыдущий рекорд | {str(res2[0])}",
-                  f"Ты                | {scores}",
+                  f"Лучший | {': '.join(records[0])}",
+                  f"Ты     | {scores}",
                   "Ваше имя:"]
-    cur.execute(f"""Update score
-    SET score = {int(score)}
-    WHERE name = 'Предыдущий'""").fetchall()
     title = pygame.font.Font(None, 120).render('Game Over.', 1, pygame.Color('white'))
     screen.blit(title, ((width - title.get_rect().width) // 2, 200))
     font = pygame.font.Font(None, 30)
@@ -161,9 +160,15 @@ def gameover_screen(scores):
                 raise SystemExit
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    file = open('data/records.csv', 'a')
+                    file.write(name + ';' + str(score) + '\n')
+                    file.close()
                     pygame.quit()
                     raise SystemExit
                 elif event.key == pygame.K_RETURN:
+                    file = open('data/records.csv', 'a')
+                    file.write(name + ';' + str(score) + '\n')
+                    file.close()
                     score = 0
                     start()
                 elif event.key == pygame.K_BACKSPACE:
@@ -418,6 +423,10 @@ class game(star):
 
 def start():
     global score_label
+    global records
+    with open('data/records.csv', encoding="utf8") as csvfile:
+        reader = csv.reader(csvfile, delimiter=';', quotechar='"')
+        records = list(reader)
     running = True
     try:
         cap = cv2.VideoCapture(0)
