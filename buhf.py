@@ -5,6 +5,7 @@ import os
 import random
 from PIL import Image
 import tkinter as tk
+from time import time
 import csv
 
 
@@ -264,15 +265,17 @@ def gameover_screen(scores):
                 raise SystemExit
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    file = open('data/records.csv', 'a')
-                    file.write(name + ';' + str(score) + '\n')
-                    file.close()
+                    if name != '':
+                        file = open('data/records.csv', 'a')
+                        file.write(name + ';' + str(score) + '\n')
+                        file.close()
                     pygame.quit()
                     raise SystemExit
                 elif event.key == pygame.K_RETURN:
-                    file = open('data/records.csv', 'a')
-                    file.write(name + ';' + str(score) + '\n')
-                    file.close()
+                    if name != '':
+                        file = open('data/records.csv', 'a')
+                        file.write(name + ';' + str(score) + '\n')
+                        file.close()
                     score = 0
                     start()
                 elif event.key == pygame.K_BACKSPACE:
@@ -303,21 +306,17 @@ class exit:
         sprite.rect.x = width - 300
         sprite.rect.y = 0
         self.buttons.add(sprite)
-        self.datas.append([12, 12, 0])
 
     def move(self):
-        global running
-
         global score
         # Секрет
         counter = 0
         # Движение шарика и чего угодно
         for sprite in self.buttons:
-            x, y = sprite.rect.x, sprite.rect.y
-            if self.datas[counter][2] == 0:
-                for i in self.mot:
-                    if sprite.rect.collidepoint(i):
-                        self.datas[counter][2] = 5
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x,y = event.pos
+                    if sprite.rect.collidepoint((x, y)):
                         gameover_screen(score)
         self.buttons.draw(screen)
 
@@ -504,6 +503,9 @@ class game(star):
 
     def draw(self, img):
         global score_label
+        global start_time
+        if time() - start_time >= 120:
+            gameover_screen(score)
         self.work(img)
         img = self.img.tobytes()
         img = pygame.image.fromstring(img, size, 'RGB')
@@ -511,10 +513,14 @@ class game(star):
         self.move()
         self.move_ball()
         self.move_star()
+        moved_x = 0
+        moved_y = 0
         if self.move_bomb() == 'boom':
             for k in range(20):
                 x = random.randint(-75, 75)
                 y = random.randint(-75, 75)
+                moved_x += x
+                moved_y += y
                 for i in self.all_bombs:
                     i.rect.x += x
                     i.rect.y += y
@@ -526,14 +532,31 @@ class game(star):
                     i.rect.y += y
                 screen.blit(img, (x, y))
                 screen.blit(score_label, (250 + x, 10 + y))
+                screen.blit(time_label, (750 + x, 10 + y))
                 self.all_bombs.draw(screen)
                 self.all_balls.draw(screen)
                 self.all_stars.draw(screen)
                 pygame.display.flip()
+            for i in self.all_bombs:
+                i.rect.x -= moved_x
+                i.rect.y -= moved_y
+            for i in self.all_balls:
+                i.rect.x -= moved_x
+                i.rect.y -= moved_y
+            for i in self.all_stars:
+                i.rect.x -= moved_x
+                i.rect.y -= moved_y
+            self.all_bombs.draw(screen)
+            self.all_balls.draw(screen)
+            self.all_stars.draw(screen)
+            pygame.display.flip()
 
 def start():
     global score_label
+    global time_label
     global records
+    global start_time
+    start_time = time()
     with open('data/records.csv', encoding="utf8") as csvfile:
         reader = csv.reader(csvfile, delimiter=';', quotechar='"')
         records = list(reader)
@@ -546,12 +569,14 @@ def start():
     g.button()
     while running:
         score_label = pygame.font.Font(None, 75).render(str(score), 1, (175, 175, 175))
+        time_label = pygame.font.Font(None, 75).render(str(int(120 - (time() - start_time))) + ' Сек.', 1, (175, 175, 175))
         _, frame = cap.read()
         frame = cv2.flip(frame, 1)
         g.new_star()
         g.new_bomb()
         g.new_ball()
         screen.blit(score_label, (250, 10))
+        screen.blit(time_label, (750, 10))
         pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
