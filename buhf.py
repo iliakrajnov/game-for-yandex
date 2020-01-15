@@ -591,9 +591,9 @@ def start():
         reader = csv.reader(csvfile, delimiter=";", quotechar='"')
         records = list(reader)
     running = True
-    try:
-        cap = cv2.VideoCapture(0)
-    except Exception:
+    cap = cv2.VideoCapture(0)
+    work, _ = cap.read()
+    if not work:
         error().gameover_screen()
     g = game([])
     g.button()
