@@ -9,8 +9,6 @@ from time import time
 import csv
 
 
-
-
 FPS = 50
 all_sprites = pygame.sprite.Group()
 root = tk.Tk()
@@ -18,14 +16,17 @@ score = 0
 size = width, height = root.winfo_screenwidth(), root.winfo_screenheight()
 width -= 105
 height -= 105
-screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)
+screen = pygame.display.set_mode(
+    size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN
+)
 clock = pygame.time.Clock()
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
+    fullname = os.path.join("data", name)
     image = pygame.image.load(fullname)
     return image
+
 
 class hard_level:
     def __init__(self):
@@ -35,20 +36,22 @@ class hard_level:
         global selector
         screen.fill((0, 0, 0))
 
-        title = pygame.font.Font(None, 120).render('Выберите уровень сложности', 1, (0, 255, 0))
+        title = pygame.font.Font(None, 120).render(
+            "Выберите уровень сложности", 1, (0, 255, 0)
+        )
         screen.blit(title, ((width - title.get_rect().width) // 2, 100))
 
         one = (width - title.get_rect().width) // 3
 
         selector = 1
-    
-        first = pygame.font.Font(None, 150).render('1', 1, (255, 255, 255))
+
+        first = pygame.font.Font(None, 150).render("1", 1, (255, 255, 255))
         screen.blit(first, (100, 500))
 
-        scnd = pygame.font.Font(None, 150).render('2', 1, (255, 255, 255))
+        scnd = pygame.font.Font(None, 150).render("2", 1, (255, 255, 255))
         screen.blit(scnd, ((width - first.get_rect().width) // 2, 500))
 
-        third = pygame.font.Font(None, 150).render('3', 1, (255, 255, 255))
+        third = pygame.font.Font(None, 150).render("3", 1, (255, 255, 255))
         screen.blit(third, (width - 100, 500))
         color = (255, 255, 255)
         clock.tick(FPS)
@@ -57,33 +60,35 @@ class hard_level:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                elif event.key == pygame.K_LEFT:
-                    selector -= 0.5
-                elif event.key == pygame.K_RIGHT:
-                    selector += 0.5
-                elif event.key == pygame.K_RETURN:
-                    title = pygame.font.Font(None, 120).render('Загрузка...', 1, pygame.Color('white'))
-                    return
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        selector -= 0.5
+                    elif event.key == pygame.K_RIGHT:
+                        selector += 0.5
+                    elif event.key == pygame.K_RETURN:
+                        return
             selector %= 3
             if selector == 0:
                 selector = 3
             if selector == 1:
-                first = pygame.font.Font(None, 150).render('1', 1, (0, 0, 255))
+                first = pygame.font.Font(None, 150).render("1", 1, (0, 0, 255))
             else:
-                first = pygame.font.Font(None, 150).render('1', 1, color)
+                first = pygame.font.Font(None, 150).render("1", 1, color)
             screen.blit(first, (100, 500))
             if selector == 2:
-                scnd = pygame.font.Font(None, 150).render('2', 1, (0, 0, 255))
+                scnd = pygame.font.Font(None, 150).render("2", 1, (0, 0, 255))
             else:
-                scnd = pygame.font.Font(None, 150).render('2', 1, color)
+                scnd = pygame.font.Font(None, 150).render("2", 1, color)
             screen.blit(scnd, ((width - first.get_rect().width) // 2, 500))
             if selector == 3:
-                third = pygame.font.Font(None, 150).render('3', 1, (0, 0, 255))
+                third = pygame.font.Font(None, 150).render("3", 1, (0, 0, 255))
             else:
-                third = pygame.font.Font(None, 150).render('3', 1, color)
+                third = pygame.font.Font(None, 150).render("3", 1, color)
             screen.blit(third, (width - 100, 500))
-            
-            title = pygame.font.Font(None, 120).render('Выберите уровень сложности', 1, (0, 255, 0))
+
+            title = pygame.font.Font(None, 120).render(
+                "Выберите уровень сложности", 1, (0, 255, 0)
+            )
             screen.blit(title, ((width - title.get_rect().width) // 2, 100))
             pygame.display.flip()
 
@@ -92,19 +97,18 @@ class leader_table_s:
     def __init__(self, data):
         self.data = data
 
-
     def leaders(self):
         global score
         screen.fill((0, 0, 0))
 
-        title = pygame.font.Font(None, 120).render('Таблица лидеров', 1, (0, 255, 0))
+        title = pygame.font.Font(None, 120).render("Таблица лидеров", 1, (0, 255, 0))
         screen.blit(title, (100, 100))
 
         font = pygame.font.Font(None, 30)
         text_coord = 120 + title.get_rect().bottom
         text_x = 100
         for line in self.data:
-            string_rendered = font.render(' :'.join(line), 1, pygame.Color('white'))
+            string_rendered = font.render(" :".join(line), 1, pygame.Color("white"))
             intro_rect = string_rendered.get_rect()
             text_coord += 10
             intro_rect.top = text_coord
@@ -119,29 +123,36 @@ class leader_table_s:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT):
                     gameover_screen(score)
-                    
-            title = pygame.font.Font(None, 120).render('Таблица лидеров', 1, (0, 255, 0))
+
+            title = pygame.font.Font(None, 120).render(
+                "Таблица лидеров", 1, (0, 255, 0)
+            )
             screen.blit(title, (100, 100))
             pygame.display.flip()
             clock.tick(FPS)
 
-class error():
+
+class error:
     def __init__(self, g=1):
         self.g = g
 
     def gameover_screen(self):
         global score
         screen.fill((0, 0, 0))
-        intro_text = ['Нажмите на кнопку "Escape", чтобы выйти на улицу',
-                      "Enter - чтобы купить веб-камеру"]
-        title = pygame.font.Font(None, 120).render('Нужна вебка', 1, pygame.Color('white'))
+        intro_text = [
+            'Нажмите на кнопку "Escape", чтобы выйти на улицу',
+            "Enter - чтобы купить веб-камеру",
+        ]
+        title = pygame.font.Font(None, 120).render(
+            "Нужна вебка", 1, pygame.Color("white")
+        )
         screen.blit(title, ((width - title.get_rect().width) // 2, 200))
         font = pygame.font.Font(None, 30)
         text_coord = 200 + title.get_rect().bottom
         for line in intro_text:
-            string_rendered = font.render(line, 1, pygame.Color('white'))
+            string_rendered = font.render(line, 1, pygame.Color("white"))
             intro_rect = string_rendered.get_rect()
             text_coord += 10
             intro_rect.top = text_coord
@@ -158,7 +169,7 @@ class error():
                         pygame.quit()
                         raise SystemExit
                     elif event.key == pygame.K_RETURN:
-                        os.system('start https://www.e-katalog.ru/list/201/pr-7488/')
+                        os.system("start https://www.e-katalog.ru/list/201/pr-7488/")
 
             pygame.display.flip()
             clock.tick()
@@ -169,31 +180,35 @@ class start_s:
         self.g = g
 
     def start_screen(self):
-        fon = pygame.transform.scale(load_image('logo.png'), (width, height))
+        fon = pygame.transform.scale(load_image("logo.png"), (width, height))
         screen.blit(fon, (0, 0))
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                elif (
+                    event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN
+                ):
                     return
             pygame.display.flip()
             clock.tick(FPS)
 
     def start_screen2(self):
-        intro_text = ["Управление интуитивное",
-                      "Кнопка Escape для побега",
-                      "Нажмите на любую клавишу, чтобы продолжить..."]
+        intro_text = [
+            "Управление интуитивное",
+            "Кнопка Escape для побега",
+            "Нажмите на любую клавишу, чтобы продолжить...",
+        ]
         screen.fill((0, 0, 0))
 
-        title = pygame.font.Font(None, 120).render('PONG', 1, (255, 0, 0))
+        title = pygame.font.Font(None, 120).render("PONG", 1, (255, 0, 0))
         screen.blit(title, ((width - title.get_rect().width) // 2, 200))
 
         font = pygame.font.Font(None, 30)
         text_coord = 400 + title.get_rect().bottom
         for line in intro_text:
-            string_rendered = font.render(line, 1, pygame.Color('white'))
+            string_rendered = font.render(line, 1, pygame.Color("white"))
             intro_rect = string_rendered.get_rect()
             text_coord += 10
             intro_rect.top = text_coord
@@ -208,7 +223,9 @@ class start_s:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                elif (
+                    event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN
+                ):
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         raise SystemExit
@@ -229,35 +246,39 @@ class start_s:
                 color[0] += 1
                 if color == [255, 0, 0]:
                     cycle = 0
-            title = pygame.font.Font(None, 120).render('PONG', 1, color)
+            title = pygame.font.Font(None, 120).render("PONG", 1, color)
             screen.blit(title, ((width - title.get_rect().width) // 2, 200))
 
             pygame.display.flip()
             clock.tick(FPS)
+
 
 def gameover_screen(scores):
     global score
     global records
     records = list(reversed(sorted(records, key=lambda i: int(i[1]))))
     screen.fill((0, 0, 0))
-    intro_text = ['Нажмите на кнопку "Escape", чтобы выйти из игры, Зажмите "Shift" - для просмотра таблицы лидеров.',
-                  "Enter - начать заново", "",
-                  f"Лучший | {': '.join(records[0])}",
-                  f"Ты     | {scores}",
-                  "Ваше имя:"]
-    title = pygame.font.Font(None, 120).render('Game Over.', 1, pygame.Color('white'))
+    intro_text = [
+        'Нажмите на кнопку "Escape", чтобы выйти из игры, Зажмите "Shift" - для просмотра таблицы лидеров.',
+        "Enter - начать заново",
+        "",
+        f"Лучший | {': '.join(records[0])}",
+        f"Ты     | {scores}",
+        "Ваше имя:",
+    ]
+    title = pygame.font.Font(None, 120).render("Game Over.", 1, pygame.Color("white"))
     screen.blit(title, ((width - title.get_rect().width) // 2, 200))
     font = pygame.font.Font(None, 30)
     text_coord = 200 + title.get_rect().bottom
     for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('white'))
+        string_rendered = font.render(line, 1, pygame.Color("white"))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.top = text_coord
         intro_rect.x = (width - string_rendered.get_rect().width) // 2
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
-    name = ''
+    name = ""
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -265,16 +286,16 @@ def gameover_screen(scores):
                 raise SystemExit
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    if name != '':
-                        file = open('data/records.csv', 'a')
-                        file.write(name + ';' + str(score) + '\n')
+                    if name != "":
+                        file = open("data/records.csv", "a")
+                        file.write(name + ";" + str(score) + "\n")
                         file.close()
                     pygame.quit()
                     raise SystemExit
                 elif event.key == pygame.K_RETURN:
-                    if name != '':
-                        file = open('data/records.csv', 'a')
-                        file.write(name + ';' + str(score) + '\n')
+                    if name != "":
+                        file = open("data/records.csv", "a")
+                        file.write(name + ";" + str(score) + "\n")
                         file.close()
                     score = 0
                     start()
@@ -287,12 +308,15 @@ def gameover_screen(scores):
                     name += chr(int(event.key))
                     if len(name) > 20:
                         name = name[:20]
-                title = pygame.font.Font(None, 120).render(name, 1, pygame.Color('white'))
+                title = pygame.font.Font(None, 120).render(
+                    name, 1, pygame.Color("white")
+                )
                 pygame.draw.rect(screen, (0, 0, 0), (0, 500, 10000, 500))
                 screen.blit(title, ((width - title.get_rect().width) // 2, 500))
 
         pygame.display.flip()
         clock.tick()
+
 
 class exit:
     def __init__(self):
@@ -315,10 +339,11 @@ class exit:
         for sprite in self.buttons:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    x,y = event.pos
+                    x, y = event.pos
                     if sprite.rect.collidepoint((x, y)):
                         gameover_screen(score)
         self.buttons.draw(screen)
+
 
 # Шарик
 class ball(exit):
@@ -326,7 +351,7 @@ class ball(exit):
         super().__init__()
         self.all_balls = pygame.sprite.Group()
         self.data = []
-        self.sound1 = pygame.mixer.Sound('data/boing.wav')
+        self.sound1 = pygame.mixer.Sound("data/boing.wav")
 
     # Новые шарики
     def new_ball(self):
@@ -389,8 +414,8 @@ class bomb(ball):
         super().__init__()
         self.all_bombs = pygame.sprite.Group()
         self.data_b = []
-        self.sound1 = pygame.mixer.Sound('data/boing.wav')
-        self.sound2 = pygame.mixer.Sound('data/boom2.wav')
+        self.sound1 = pygame.mixer.Sound("data/boing.wav")
+        self.sound2 = pygame.mixer.Sound("data/boom2.wav")
 
     def new_bomb(self):
         global selector
@@ -413,7 +438,7 @@ class bomb(ball):
                     self.sound2.play()
                     score -= 100
                     self.all_bombs.remove(sprite)
-                    return 'boom'
+                    return "boom"
             else:
                 self.data_b[counter][2] -= 1
             if int(y) <= 0 or int(y) >= height:
@@ -436,8 +461,8 @@ class star(bomb):
         super().__init__(self)
         self.all_stars = pygame.sprite.Group()
         self.data_s = []
-        self.sound1 = pygame.mixer.Sound('data/boing.wav')
-        self.sound3 = pygame.mixer.Sound('data/raz.wav')
+        self.sound1 = pygame.mixer.Sound("data/boing.wav")
+        self.sound3 = pygame.mixer.Sound("data/raz.wav")
 
     def new_star(self):
         global selector
@@ -495,9 +520,11 @@ class game(star):
                 for j in range(0, ys, 20):
                     rgb = pix[i, j]
                     rgbol = old[i, j]
-                    if rgb[0] not in range(rgbol[0] - 50, rgbol[0] + 50) and rgb[1] not in range(rgbol[1] - 50,
-                                                                                                 rgbol[1] + 50) and \
-                            pix[i, j][2] not in range(rgbol[2] - 50, rgbol[2] + 50):
+                    if (
+                        rgb[0] not in range(rgbol[0] - 50, rgbol[0] + 50)
+                        and rgb[1] not in range(rgbol[1] - 50, rgbol[1] + 50)
+                        and pix[i, j][2] not in range(rgbol[2] - 50, rgbol[2] + 50)
+                    ):
                         self.mot.append([i, j])
         self.old = pix
 
@@ -508,14 +535,14 @@ class game(star):
             gameover_screen(score)
         self.work(img)
         img = self.img.tobytes()
-        img = pygame.image.fromstring(img, size, 'RGB')
+        img = pygame.image.fromstring(img, size, "RGB")
         screen.blit(img, (0, 0))
         self.move()
         self.move_ball()
         self.move_star()
         moved_x = 0
         moved_y = 0
-        if self.move_bomb() == 'boom':
+        if self.move_bomb() == "boom":
             for k in range(20):
                 x = random.randint(-75, 75)
                 y = random.randint(-75, 75)
@@ -551,14 +578,15 @@ class game(star):
             self.all_stars.draw(screen)
             pygame.display.flip()
 
+
 def start():
     global score_label
     global time_label
     global records
     global start_time
     start_time = time()
-    with open('data/records.csv', encoding="utf8") as csvfile:
-        reader = csv.reader(csvfile, delimiter=';', quotechar='"')
+    with open("data/records.csv", encoding="utf8") as csvfile:
+        reader = csv.reader(csvfile, delimiter=";", quotechar='"')
         records = list(reader)
     running = True
     try:
@@ -569,7 +597,9 @@ def start():
     g.button()
     while running:
         score_label = pygame.font.Font(None, 75).render(str(score), 1, (175, 175, 175))
-        time_label = pygame.font.Font(None, 75).render(str(int(120 - (time() - start_time))) + ' Сек.', 1, (175, 175, 175))
+        time_label = pygame.font.Font(None, 75).render(
+            str(int(120 - (time() - start_time))) + " Сек.", 1, (175, 175, 175)
+        )
         _, frame = cap.read()
         frame = cv2.flip(frame, 1)
         g.new_star()
@@ -583,6 +613,7 @@ def start():
                 if event.key == pygame.K_ESCAPE:
                     gameover_screen(score)
         g.draw(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+
 
 # Уря игра
 pygame.init()
