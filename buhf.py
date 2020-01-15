@@ -224,10 +224,13 @@ class start_s:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.type == pygame.MOUSEBUTTONDOWN or event.key == pygame.K_ESCAPE:
+                    if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         raise SystemExit
-                    hard_level().choice()
+                    #hard_level().choice()
+                    return
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    #hard_level().choice()
                     return
             if cycle == 0:
                 color[0] -= 1
@@ -582,6 +585,7 @@ def start():
     global time_label
     global records
     global start_time
+    hard_level().choice()
     start_time = time()
     with open("data/records.csv", encoding="utf8") as csvfile:
         reader = csv.reader(csvfile, delimiter=";", quotechar='"')
