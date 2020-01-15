@@ -62,9 +62,9 @@ class hard_level:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        selector -= 0.5
+                        selector -= 1
                     elif event.key == pygame.K_RIGHT:
-                        selector += 0.5
+                        selector += 1
                     elif event.key == pygame.K_RETURN:
                         return
             selector %= 3
@@ -223,10 +223,8 @@ class start_s:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                elif (
-                    event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN
-                ):
-                    if event.key == pygame.K_ESCAPE:
+                elif event.type == pygame.KEYDOWN:
+                    if event.type == pygame.MOUSEBUTTONDOWN or event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         raise SystemExit
                     hard_level().choice()
