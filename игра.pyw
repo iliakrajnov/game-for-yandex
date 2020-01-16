@@ -99,6 +99,7 @@ class hard_level:
                     elif event.key == pygame.K_RIGHT:
                         selector += 1
                     elif event.key == pygame.K_RETURN:
+                        
                         pygame.display.flip()
                         return
             selector %= 3
@@ -632,6 +633,10 @@ def start():
     global time_label
     global records
     global start_time
+    cap = cv2.VideoCapture(0)
+    work, _ = cap.read()
+    if not work:
+        error().gameover_screen()
     hard_level().choice()
     start_time = time()
     '''with open("data/records.csv", encoding="utf8") as csvfile:
@@ -641,10 +646,6 @@ def start():
     for i in get_table().splitlines():
         records.append(str(i.decode('utf-8')).split(';'))
     running = True
-    cap = cv2.VideoCapture(0)
-    work, _ = cap.read()
-    if not work:
-        error().gameover_screen()
     g = game([])
     g.button()
     while running:
