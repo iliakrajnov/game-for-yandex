@@ -343,7 +343,7 @@ def gameover_screen():
                         records.append([name, str(score)])
                         ok = ''
                         for i in records:
-                            ok += ';'.join(i)
+                            ok += ';'.join(i) + '\n'
                         send(ok)
                     score = 0
                     start()
@@ -580,7 +580,7 @@ class game(star):
         global score_label
         global start_time
         if time() - start_time >= 120:
-            gameover_screen(score)
+            gameover_screen()
         self.work(img)
         img = self.img.tobytes()
         img = pygame.image.fromstring(img, size, "RGB")
