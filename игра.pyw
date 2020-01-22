@@ -1,14 +1,17 @@
-import pygame
-import cv2
-import sys
-import os
+import email
+import imaplib
 import random
-from PIL import Image
+import smtplib
+import smtplib
+import sys
 import tkinter as tk
 from time import time
-import smtplib
-import imaplib
-import email
+
+import os
+import cv2
+import pygame
+from PIL import Image
+from PIL import Image
 
 FPS = 50
 all_sprites = pygame.sprite.Group()
@@ -26,24 +29,24 @@ clock = pygame.time.Clock()
 def send(text):
     smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
     smtpObj.starttls()
-    smtpObj.login('krainowilia05@gmail.com','ilia808005')
-    smtpObj.sendmail("krainowilia05@gmail.com","krainowilia05@gmail.com", text)
+    smtpObj.login('yandexliceumproject@gmail.com','yandex_liceum_2020')
+    smtpObj.sendmail("yandexliceumproject@gmail.com","yandexliceumproject@gmail.com", text)
     smtpObj.quit()
 
 def get_table():
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
-    mail.login('krainowilia05@gmail.com', 'ilia808005')
+    mail.login('yandexliceumproject@gmail.com', 'yandex_liceum_2020')
     mail.list()
-     
+
     # Выводит список папок в почтовом ящике.
     mail.select("inbox") # Подключаемся к папке "входящие".
-    result, data = mail.search(None, 'FROM "krainowilia05@gmail.com"')
+    result, data = mail.search(None, 'FROM "yandexliceumproject@gmail.com"')
     ids = data[0] # Получаем сроку номеров писем
     id_list = ids.split() # Разделяем ID писем
     latest_email_id = id_list[-1] # Берем последний ID
-     
+
     result, data = mail.fetch(latest_email_id, "(RFC822)") # Получаем тело письма (RFC822) для данного ID
-     
+
     raw_email = data[0][1]
     email_message = email.message_from_bytes(raw_email)
     for part in email_message.walk():
@@ -54,7 +57,7 @@ def get_table():
             continue
 
 
-    
+
 def load_image(name, colorkey=None):
     fullname = os.path.join("data", name)
     image = pygame.image.load(fullname)
@@ -99,7 +102,7 @@ class hard_level:
                     elif event.key == pygame.K_RIGHT:
                         selector += 1
                     elif event.key == pygame.K_RETURN:
-                        
+
                         pygame.display.flip()
                         return
             selector %= 3
