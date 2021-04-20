@@ -1,8 +1,4 @@
-import email
-import imaplib
 import random
-import smtplib
-import smtplib
 import sys
 import tkinter as tk
 from time import time
@@ -10,51 +6,26 @@ from time import time
 import os
 import cv2
 import pygame
-from PIL import Image
-from PIL import Image
 
-FPS = 50
+FPS = 60
 all_sprites = pygame.sprite.Group()
 root = tk.Tk()
 score = 0
 size = width, height = root.winfo_screenwidth(), root.winfo_screenheight()
-width -= 105
-height -= 105
+
 screen = pygame.display.set_mode(
-    size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN
-)
+    size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 
 
 def send(text):
-    smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
-    smtpObj.starttls()
-    smtpObj.login('yandexliceumproject@gmail.com','yandex_liceum_2020')
-    smtpObj.sendmail("yandexliceumproject@gmail.com","yandexliceumproject@gmail.com", text)
-    smtpObj.quit()
+    with open("data/records.csv", 'w', encoding="utf8") as ast:
+        ast.write(text)
+
 
 def get_table():
-    mail = imaplib.IMAP4_SSL('imap.gmail.com')
-    mail.login('yandexliceumproject@gmail.com', 'yandex_liceum_2020')
-    mail.list()
-
-    # Выводит список папок в почтовом ящике.
-    mail.select("inbox") # Подключаемся к папке "входящие".
-    result, data = mail.search(None, 'FROM "yandexliceumproject@gmail.com"')
-    ids = data[0] # Получаем сроку номеров писем
-    id_list = ids.split() # Разделяем ID писем
-    latest_email_id = id_list[-1] # Берем последний ID
-
-    result, data = mail.fetch(latest_email_id, "(RFC822)") # Получаем тело письма (RFC822) для данного ID
-
-    raw_email = data[0][1]
-    email_message = email.message_from_bytes(raw_email)
-    for part in email_message.walk():
-        if part.get_content_type() == "text/plain": # ignore attachments/html
-            part.get_payload(decode=True)
-            return part.get_payload(decode=True)
-        else:
-            continue
+    with open("data/records.csv", encoding="utf8") as ast:
+        return ast.read()
 
 
 
@@ -62,73 +33,6 @@ def load_image(name, colorkey=None):
     fullname = os.path.join("data", name)
     image = pygame.image.load(fullname)
     return image
-
-
-class hard_level:
-    def __init__(self):
-        pass
-
-    def choice(self):
-        global selector
-        screen.fill((0, 0, 0))
-
-        title = pygame.font.Font(None, 120).render(
-            "Выберите уровень сложности", 1, (0, 255, 0)
-        )
-        screen.blit(title, ((width - title.get_rect().width) // 2, 100))
-
-        one = (width - title.get_rect().width) // 3
-
-        selector = 1
-
-        first = pygame.font.Font(None, 150).render("1", 1, (255, 255, 255))
-        screen.blit(first, (100, 500))
-
-        scnd = pygame.font.Font(None, 150).render("2", 1, (255, 255, 255))
-        screen.blit(scnd, ((width - first.get_rect().width) // 2, 500))
-
-        third = pygame.font.Font(None, 150).render("3", 1, (255, 255, 255))
-        screen.blit(third, (width - 100, 500))
-        color = (255, 255, 255)
-        clock.tick(FPS)
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        selector -= 1
-                    elif event.key == pygame.K_RIGHT:
-                        selector += 1
-                    elif event.key == pygame.K_RETURN:
-
-                        pygame.display.flip()
-                        return
-            selector %= 3
-            if selector == 0:
-                selector = 3
-            if selector == 1:
-                first = pygame.font.Font(None, 150).render("1", 1, (0, 0, 255))
-            else:
-                first = pygame.font.Font(None, 150).render("1", 1, color)
-            screen.blit(first, (100, 500))
-            if selector == 2:
-                scnd = pygame.font.Font(None, 150).render("2", 1, (0, 0, 255))
-            else:
-                scnd = pygame.font.Font(None, 150).render("2", 1, color)
-            screen.blit(scnd, ((width - first.get_rect().width) // 2, 500))
-            if selector == 3:
-                third = pygame.font.Font(None, 150).render("3", 1, (0, 0, 255))
-            else:
-                third = pygame.font.Font(None, 150).render("3", 1, color)
-            screen.blit(third, (width - 100, 500))
-
-            title = pygame.font.Font(None, 120).render(
-                "Выберите уровень сложности", 1, (0, 255, 0)
-            )
-            screen.blit(title, ((width - title.get_rect().width) // 2, 100))
-            pygame.display.flip()
 
 
 class leader_table_s:
@@ -235,7 +139,7 @@ class start_s:
                 ):
                     return
             title = pygame.font.Font(None, 24).render(
-                "ОСТОРОЖНО, ИГРА МОЖЕТ ВЫЗЫВАТЬ ПРИПАДКИ ЭПИЛЕПСИИ! нажмите на любую клавишу для продолжения, esc - для выхода.",
+                "Внимание, ИГРА МОЖЕТ ВЫЗЫВАТЬ ПРИПАДКИ ЭПИЛЕПСИИ! нажмите на любую клавишу для продолжения, esc - для выхода.",
                 1, (255, 0, 0))
             screen.blit(title, ((width - title.get_rect().width) // 2, height - 20))
             pygame.display.flip()
@@ -243,17 +147,18 @@ class start_s:
 
     def start_screen2(self):
         intro_text = [
-            "Управление интуитивное",
-            "Кнопка Escape для побега",
+            "Управление интуитивное - двигайтесь и собирайте звездочки, уворачиваясь от бомб",
+            "Кнопка Escape для выхода",
             "Нажмите на любую клавишу, чтобы продолжить...",
+            "",
+            "Разработчики - Илья Крайнов и Алексей Попович",
+            "Дизайнер - Юрий Поцепаев",
+            "Мудрый учитель - Екатерина Филина"
         ]
         screen.fill((0, 0, 0))
 
-        title = pygame.font.Font(None, 120).render("PONG", 1, (255, 0, 0))
-        screen.blit(title, ((width - title.get_rect().width) // 2, 200))
-
         font = pygame.font.Font(None, 30)
-        text_coord = 400 + title.get_rect().bottom
+        text_coord = 500
         for line in intro_text:
             string_rendered = font.render(line, 1, pygame.Color("white"))
             intro_rect = string_rendered.get_rect()
@@ -274,10 +179,8 @@ class start_s:
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         raise SystemExit
-                    # hard_level().choice()
                     return
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    # hard_level().choice()
                     return
             if cycle == 0:
                 color[0] -= 1
@@ -295,10 +198,41 @@ class start_s:
                 if color == [255, 0, 0]:
                     cycle = 0
             title = pygame.font.Font(None, 120).render("PONG", 1, color)
+            subtitle = pygame.font.Font(None, 60).render("Triumf edition", 1, color)
             screen.blit(title, ((width - title.get_rect().width) // 2, 200))
+            screen.blit(subtitle, ((width - subtitle.get_rect().width) // 2, 300))
 
             pygame.display.flip()
             clock.tick(FPS)
+    
+    def loading_screen(self):
+        screen.fill((0, 0, 0))
+        title = pygame.font.Font(None, 120).render("ЗАГРУЗКА,", 1, pygame.Color("white"))
+        subtitle = pygame.font.Font(None, 60).render("которая не займет больше 20 секунд. Обещаем!", 1, pygame.Color("white"))
+        screen.blit(title, ((width - title.get_rect().width) // 2, 200))
+        screen.blit(subtitle, ((width - subtitle.get_rect().width) // 2, 300))
+
+        intro_text = [
+            "Сейчас мы настраиваем оборудование наилучшим образом, как только можем представить",
+            "",
+            "Разработчики - Илья Крайнов и Алексей Попович",
+            "Дизайнер - Юрий Поцепаев",
+            "Мудрый учитель - Екатерина Филина"
+        ]
+
+        font = pygame.font.Font(None, 30)
+        text_coord = 500
+        for line in intro_text:
+            string_rendered = font.render(line, 1, pygame.Color("white"))
+            intro_rect = string_rendered.get_rect()
+            text_coord += 10
+            intro_rect.top = text_coord
+            intro_rect.x = (width - string_rendered.get_rect().width) // 2
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+
+        pygame.display.flip()
+        return 
 
 
 def gameover_screen():
@@ -350,7 +284,7 @@ def gameover_screen():
                             ok += ';'.join(i) + '\n'
                         send(ok)
                     score = 0
-                    start()
+                    g.restart()
                 elif event.key == pygame.K_BACKSPACE:
                     name = name[:-1]
                 elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
@@ -407,14 +341,13 @@ class ball(exit):
 
     # Новые шарики
     def new_ball(self):
-        global selector
         sprite = pygame.sprite.Sprite()
         sprite.image = pygame.image.load("data/ball.png")
         sprite.rect = sprite.image.get_rect()
         sprite.rect.x = random.randint(1, 1200)
         sprite.rect.y = random.randint(1, 100)
         self.all_balls.add(sprite)
-        self.data.append([12 * selector, 12 * selector, 0])
+        self.data.append([12, 12, 0])
 
     def move_ball(self):
         global score
@@ -470,14 +403,13 @@ class bomb(ball):
         self.sound2 = pygame.mixer.Sound("data/boom2.wav")
 
     def new_bomb(self):
-        global selector
         sprite = pygame.sprite.Sprite()
         sprite.image = pygame.image.load("data/bomb.png")
         sprite.rect = sprite.image.get_rect()
         sprite.rect.x = random.randint(1, 1200)
         sprite.rect.y = random.randint(1, 40)
         self.all_bombs.add(sprite)
-        self.data_b.append([12 * selector, 12 * selector, 0])
+        self.data_b.append([12, 12, 0])
 
     def move_bomb(self):
         global score
@@ -517,7 +449,6 @@ class star(bomb):
         self.sound3 = pygame.mixer.Sound("data/raz.wav")
 
     def new_star(self):
-        global selector
         sprite = pygame.sprite.Sprite()
         sprite.image = pygame.image.load("data/star.png")
         sprite.image.set_colorkey((255, 255, 255))
@@ -525,7 +456,7 @@ class star(bomb):
         sprite.rect.x = random.randint(1, width)
         sprite.rect.y = random.randint(1, 100)
         self.all_stars.add(sprite)
-        self.data_s.append([12 * selector, 12 * selector, 0])
+        self.data_s.append([12, 12, 0])
 
     def move_star(self):
         global score
@@ -560,42 +491,47 @@ class game(star):
         super().__init__(self)
         self.old = old
         self.mot = []
+    
+    def restart(self):
+        s = start_s()
+        s.start_screen()
+        s.start_screen2()
+        s.loading_screen()
+        start()
 
     def work(self, img):
-        self.img = img.resize(size)
-        xs, ys = self.img.size
-        pix = self.img.load()
-        self.mot = []
-        old = self.old
-        if old != []:
-            for i in range(0, xs, 20):
-                for j in range(0, ys, 20):
-                    rgb = pix[i, j]
-                    rgbol = old[i, j]
-                    if (
-                            rgb[0] not in range(rgbol[0] - 50, rgbol[0] + 50)
-                            and rgb[1] not in range(rgbol[1] - 50, rgbol[1] + 50)
-                            and pix[i, j][2] not in range(rgbol[2] - 50, rgbol[2] + 50)
-                    ):
-                        self.mot.append([i, j])
-        self.old = pix
+        img = cv2.resize(img, size, cv2.INTER_NEAREST)
+        if self.old != []:
+            self.mot = []
+            diff = cv2.absdiff(self.old, img)
+            gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY) # перевод кадров в черно-белую градацию
+            blur = cv2.GaussianBlur(gray, (5, 5), 0) # фильтрация лишних контуров 
+            _, thresh = cv2.threshold(blur, 20, 255, cv2.THRESH_BINARY) # метод для выделения кромки объекта белым цветом
+            dilated = cv2.dilate(thresh, None, iterations = 3) # данный метод противоположен методу erosion(), т.е. эрозии объекта, и расширяет выделенную на предыдущем этапе область
+            mot, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            for i in mot:
+                if  cv2.contourArea(i) >= 700:
+                    for j in i.tolist():
+                        self.mot.append(j[0])
+            
+            self.old = img
+            self.img = img
+        else:
+            self.img = img
+            self.old = img
 
     def draw(self, img):
         global score_label
         global start_time
-        if time() - start_time >= 120:
+        if time() - start_time >= 60:
             gameover_screen()
         self.work(img)
-        img = self.img.tobytes()
-        img = pygame.image.fromstring(img, size, "RGB")
+        img = pygame.image.frombuffer(self.img.tostring(), self.img.shape[1::-1], "RGB")
         screen.blit(img, (0, 0))
-        self.move()
-        self.move_ball()
-        self.move_star()
         moved_x = 0
         moved_y = 0
         if self.move_bomb() == "boom":
-            for k in range(5):
+            for k in range(2):
                 x = random.randint(-75, 75)
                 y = random.randint(-75, 75)
                 moved_x += x
@@ -625,10 +561,15 @@ class game(star):
             for i in self.all_stars:
                 i.rect.x -= moved_x
                 i.rect.y -= moved_y
-            self.all_bombs.draw(screen)
-            self.all_balls.draw(screen)
-            self.all_stars.draw(screen)
-            pygame.display.flip()
+        screen.blit(score_label, (250, 10))
+        screen.blit(time_label, (750, 10))
+        self.move()
+        self.move_ball()
+        self.move_star()
+        self.all_bombs.draw(screen)
+        self.all_balls.draw(screen)
+        self.all_stars.draw(screen)
+        pygame.display.flip()
 
 
 def start():
@@ -637,24 +578,22 @@ def start():
     global records
     global start_time
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     work, _ = cap.read()
     if not work:
         error().gameover_screen()
-    hard_level().choice()
     start_time = time()
-    '''with open("data/records.csv", encoding="utf8") as csvfile:
-        reader = csv.reader(csvfile, delimiter=";", quotechar='"')
-        records = list(reader)'''
     records = []
     for i in get_table().splitlines():
-        records.append(str(i.decode('utf-8')).split(';'))
+        records.append(i.split(';'))
     running = True
     g = game([])
     g.button()
     while running:
         score_label = pygame.font.Font(None, 75).render(str(score), 1, (175, 175, 175))
         time_label = pygame.font.Font(None, 75).render(
-            str(int(120 - (time() - start_time))) + " Сек.", 1, (175, 175, 175)
+            str(int(60 - (time() - start_time))) + " Сек.", 1, (175, 175, 175)
         )
         _, frame = cap.read()
         frame = cv2.flip(frame, 1)
@@ -668,12 +607,10 @@ def start():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     gameover_screen()
-        g.draw(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+        g.draw(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
 
 # Уря игра
 pygame.init()
-s = start_s()
-s.start_screen()
-s.start_screen2()
-start()
+g = game([])
+g.restart()
