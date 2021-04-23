@@ -523,7 +523,7 @@ class game(star):
     def draw(self, img):
         global score_label
         global start_time
-        if time() - start_time >= 60:
+        if time() - start_time >= 1800:
             gameover_screen()
         self.work(img)
         img = pygame.image.frombuffer(self.img.tostring(), self.img.shape[1::-1], "RGB")
@@ -593,7 +593,7 @@ def start():
     while running:
         score_label = pygame.font.Font(None, 75).render(str(score), 1, (175, 175, 175))
         time_label = pygame.font.Font(None, 75).render(
-            str(int(60 - (time() - start_time))) + " Сек.", 1, (175, 175, 175)
+            str(int(1800 - (time() - start_time))) + " Сек.", 1, (175, 175, 175)
         )
         _, frame = cap.read()
         frame = cv2.flip(frame, 1)
