@@ -152,7 +152,6 @@ class start_s:
             "Нажмите на любую клавишу, чтобы продолжить...",
             "",
             "Разработчики - Илья Крайнов и Алексей Попович",
-            "Дизайнер - Юрий Поцепаев",
             "Мудрый учитель - Екатерина Филина"
         ]
         screen.fill((0, 0, 0))
@@ -216,7 +215,6 @@ class start_s:
             "Сейчас мы настраиваем оборудование наилучшим образом, как только можем представить",
             "",
             "Разработчики - Илья Крайнов и Алексей Попович",
-            "Дизайнер - Юрий Поцепаев",
             "Мудрый учитель - Екатерина Филина"
         ]
 
@@ -389,8 +387,8 @@ class ball(exit):
             sprite.rect.x += self.data[counter][0]
             counter += 1
             # Контроль шариков
-            if counter == 11:
-                self.all_balls.remove(sprite)
+        if counter < 10:
+            self.new_ball()
         self.all_balls.draw(screen)
 
 
@@ -418,25 +416,31 @@ class bomb(ball):
         for sprite in self.all_bombs:
             x, y = sprite.rect.x, sprite.rect.y
             for i in self.mot:
-                if sprite.rect.collidepoint(i):
+                if sprite.rect.collidepoint(i) and self.data_b[counter][2] == 0:
                     self.sound2.play()
                     score -= 100
-                    self.all_bombs.remove(sprite)
-                    return "boom"
-            else:
-                self.data_b[counter][2] -= 1
+                    self.data_b[counter][2] = 1
+                    sprite.image = pygame.image.load("data/boom.png")
             if int(y) <= 0 or int(y) >= height:
                 self.data_b[counter][1] = -self.data_b[counter][1]
                 self.sound1.play()
             if int(x) <= 0 or int(x) >= width:
                 self.data_b[counter][0] = -self.data_b[counter][0]
                 self.sound1.play()
-            sprite.rect.y += self.data_b[counter][1]
-            sprite.rect.x += self.data_b[counter][0]
+            
+            if self.data_b[counter][2] == 0:
+                sprite.rect.y += self.data_b[counter][1]
+                sprite.rect.x += self.data_b[counter][0]
+            elif self.data_b[counter][2] >= 10:
+                self.all_bombs.remove(sprite)
+                del self.data_b[counter]
+                counter -= 1
+            elif self.data_b[counter][2] > 0:
+                self.data_b[counter][2] += 1
             counter += 1
             # Контроль бомб
-            if counter == 3:
-                self.all_bombs.remove(sprite)
+        if counter < 3:
+            self.new_bomb()
         self.all_bombs.draw(screen)
 
 
@@ -469,20 +473,21 @@ class star(bomb):
                     self.sound3.play()
                     score += 100
                     self.all_stars.remove(sprite)
+                    del self.data_s[counter]
+                    break
             else:
-                self.data_s[counter][2] -= 1
-            if int(y) <= 0 or int(y) >= height:
-                self.data_s[counter][1] = -self.data_s[counter][1]
-                self.sound1.play()
-            if int(x) <= 0 or int(x) >= width:
-                self.data_s[counter][0] = -self.data_s[counter][0]
-                self.sound1.play()
-            sprite.rect.y += self.data_s[counter][1]
-            sprite.rect.x += self.data_s[counter][0]
-            counter += 1
+                if int(y) <= 0 or int(y) >= height:
+                    self.data_s[counter][1] = -self.data_s[counter][1]
+                    self.sound1.play()
+                if int(x) <= 0 or int(x) >= width:
+                    self.data_s[counter][0] = -self.data_s[counter][0]
+                    self.sound1.play()
+                sprite.rect.y += self.data_s[counter][1]
+                sprite.rect.x += self.data_s[counter][0]
+                counter += 1
             # Контроль звезд
-            if counter == 3:
-                self.all_stars.remove(sprite)
+        if counter < 3:
+            self.new_star()
         self.all_stars.draw(screen)
 
 
@@ -528,7 +533,7 @@ class game(star):
         self.work(img)
         img = pygame.image.frombuffer(self.img.tostring(), self.img.shape[1::-1], "RGB")
         screen.blit(img, (0, 0))
-        moved_x = 0
+        '''moved_x = 0
         moved_y = 0
         if self.move_bomb() == "boom":
             for k in range(2):
@@ -560,12 +565,13 @@ class game(star):
                 i.rect.y -= moved_y
             for i in self.all_stars:
                 i.rect.x -= moved_x
-                i.rect.y -= moved_y
+                i.rect.y -= moved_y'''
         screen.blit(score_label, (250, 10))
         screen.blit(time_label, (750, 10))
         self.move()
         self.move_ball()
         self.move_star()
+        self.move_bomb()
         self.all_bombs.draw(screen)
         self.all_balls.draw(screen)
         self.all_stars.draw(screen)
@@ -591,15 +597,13 @@ def start():
     g = game([])
     g.button()
     while running:
+        pygame.time.Clock().tick(80)
         score_label = pygame.font.Font(None, 75).render(str(score), 1, (175, 175, 175))
         time_label = pygame.font.Font(None, 75).render(
             str(int(1800 - (time() - start_time))) + " Сек.", 1, (175, 175, 175)
         )
         _, frame = cap.read()
         frame = cv2.flip(frame, 1)
-        g.new_star()
-        g.new_bomb()
-        g.new_ball()
         screen.blit(score_label, (250, 10))
         screen.blit(time_label, (750, 10))
         pygame.display.flip()
